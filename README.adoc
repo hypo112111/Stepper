@@ -14,7 +14,7 @@ http://www.arduino.cc/en/Reference/{repository-name}
 
 == Modification ==
 
-<h3>Half Stepping High Resolution</h3>
+Half Stepping High Resolution
 
 == License ==
 
