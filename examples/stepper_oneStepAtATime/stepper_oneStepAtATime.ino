@@ -1,3 +1,4 @@
+
 /*
  Stepper Motor Control - one step at a time
 
@@ -19,10 +20,10 @@
 
 #include <Stepper.h>
 
-const int stepsPerRevolution = 200;  // change this to fit the number of steps per revolution
+const int stepsPerRevolution = 4096;  // change this to fit the number of steps per revolution
 // for your motor
 
-// initialize the Stepper library on pins 8 through 11:
+// initialize the stepper library on pins 8 through 11:
 Stepper myStepper(stepsPerRevolution, 8, 9, 10, 11);
 
 int stepCount = 0;         // number of steps the motor has taken
@@ -38,5 +39,8 @@ void loop() {
   Serial.print("steps:");
   Serial.println(stepCount);
   stepCount++;
-  delay(500);
+  if( stepCount % 64 == 0){
+    delay(500);
+  }
 }
+
