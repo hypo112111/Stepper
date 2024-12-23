@@ -8,6 +8,7 @@
  * High-speed stepping mod         by Eugene Kozlenko
  * Timer rollover fix              by Eugene Kozlenko
  * Five phase five wire    (1.1.0) by Ryan Orendorff
+ * Modified by             (6.0.0) by hypo112111
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -34,9 +35,9 @@
  * reduced from 4 to 2 for the unipolar and bipolar motors.
  *
  * A slightly modified circuit around a Darlington transistor array or an
- * L293 H-bridge connects to only 2 microcontroller pins, inverts the signals
+ * L293 H-bridge connects to only 2 microcontroler pins, inverts the signals
  * received, and delivers the 4 (2 plus 2 inverted ones) output signals
- * required for driving a stepper motor. Similarly the Arduino motor shield's
+ * required for driving a stepper motor. Similarly the Arduino motor shields
  * 2 direction pins may be used.
  *
  * The sequence of control signals for 5 phase, 5 control wires is as follows:
@@ -53,15 +54,19 @@
  *    9  1  0  1  0  1
  *   10  0  0  1  0  1
  *
- * The sequence of control signals for 4 control wires is as follows:
+ * The sequence of control signals for 4 control wires is as follows (Half Stepping High Resolution):
  *
  * Step C0 C1 C2 C3
- *    1  1  0  1  0
- *    2  0  1  1  0
- *    3  0  1  0  1
- *    4  1  0  0  1
+ *    1  0  0  0  1
+ *    2  0  0  1  1
+ *    3  0  0  1  0
+ *    4  0  1  1  0
+ *    5  0  1  0  0
+ *    6  1  1  0  0
+ *    7  1  0  0  0
+ *    8  1  0  0  1
  *
- * The sequence of control signals for 2 control wires is as follows
+ * The sequence of controls signals for 2 control wires is as follows
  * (columns C1 and C2 from above):
  *
  * Step C0 C1
@@ -72,7 +77,7 @@
  *
  * The circuits can be found at
  *
- * https://docs.arduino.cc/learn/electronics/stepper-motors#circuit
+ * http://www.arduino.cc/en/Tutorial/Stepper
  */
 
 // ensure this library description is only included once
@@ -102,7 +107,7 @@ class Stepper {
     void stepMotor(int this_step);
 
     int direction;            // Direction of rotation
-    unsigned long step_delay; // delay between steps, in us, based on speed
+    unsigned long step_delay; // delay between steps, in ms, based on speed
     int number_of_steps;      // total number of steps this motor can take
     int pin_count;            // how many pins are in use.
     int step_number;          // which step the motor is on
@@ -114,7 +119,7 @@ class Stepper {
     int motor_pin_4;
     int motor_pin_5;          // Only 5 phase motor
 
-    unsigned long last_step_time; // timestamp in us of when the last step was taken
+    unsigned long last_step_time; // time stamp in us of when the last step was taken
 };
 
 #endif

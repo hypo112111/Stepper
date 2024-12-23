@@ -8,6 +8,7 @@
  * High-speed stepping mod         by Eugene Kozlenko
  * Timer rollover fix              by Eugene Kozlenko
  * Five phase five wire    (1.1.0) by Ryan Orendorff
+ * Modified by             (6.0.0) by hypo112111
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -34,9 +35,9 @@
  * reduced from 4 to 2 for the unipolar and bipolar motors.
  *
  * A slightly modified circuit around a Darlington transistor array or an
- * L293 H-bridge connects to only 2 microcontroller pins, inverts the signals
+ * L293 H-bridge connects to only 2 microcontroler pins, inverts the signals
  * received, and delivers the 4 (2 plus 2 inverted ones) output signals
- * required for driving a stepper motor. Similarly the Arduino motor shield's
+ * required for driving a stepper motor. Similarly the Arduino motor shields
  * 2 direction pins may be used.
  *
  * The sequence of control signals for 5 phase, 5 control wires is as follows:
@@ -53,15 +54,19 @@
  *    9  1  0  1  0  1
  *   10  0  0  1  0  1
  *
- * The sequence of control signals for 4 control wires is as follows:
+ * The sequence of control signals for 4 control wires is as follows (Half Stepping High Resolution):
  *
  * Step C0 C1 C2 C3
- *    1  1  0  1  0
- *    2  0  1  1  0
- *    3  0  1  0  1
- *    4  1  0  0  1
+ *    1  0  0  0  1
+ *    2  0  0  1  1
+ *    3  0  0  1  0
+ *    4  0  1  1  0
+ *    5  0  1  0  0
+ *    6  1  1  0  0
+ *    7  1  0  0  0
+ *    8  1  0  0  1
  *
- * The sequence of control signals for 2 control wires is as follows
+ * The sequence of controls signals for 2 control wires is as follows
  * (columns C1 and C2 from above):
  *
  * Step C0 C1
@@ -72,7 +77,7 @@
  *
  * The circuits can be found at
  *
- * https://docs.arduino.cc/learn/electronics/stepper-motors#circuit
+ * http://www.arduino.cc/en/Tutorial/Stepper
  */
 
 #include "Arduino.h"
@@ -86,7 +91,7 @@ Stepper::Stepper(int number_of_steps, int motor_pin_1, int motor_pin_2)
 {
   this->step_number = 0;    // which step the motor is on
   this->direction = 0;      // motor direction
-  this->last_step_time = 0; // timestamp in us of the last step taken
+  this->last_step_time = 0; // time stamp in us of the last step taken
   this->number_of_steps = number_of_steps; // total number of steps for this motor
 
   // Arduino pins for the motor control connection:
@@ -116,7 +121,7 @@ Stepper::Stepper(int number_of_steps, int motor_pin_1, int motor_pin_2,
 {
   this->step_number = 0;    // which step the motor is on
   this->direction = 0;      // motor direction
-  this->last_step_time = 0; // timestamp in us of the last step taken
+  this->last_step_time = 0; // time stamp in us of the last step taken
   this->number_of_steps = number_of_steps; // total number of steps for this motor
 
   // Arduino pins for the motor control connection:
@@ -148,7 +153,7 @@ Stepper::Stepper(int number_of_steps, int motor_pin_1, int motor_pin_2,
 {
   this->step_number = 0;    // which step the motor is on
   this->direction = 0;      // motor direction
-  this->last_step_time = 0; // timestamp in us of the last step taken
+  this->last_step_time = 0; // time stamp in us of the last step taken
   this->number_of_steps = number_of_steps; // total number of steps for this motor
 
   // Arduino pins for the motor control connection:
@@ -221,9 +226,7 @@ void Stepper::step(int steps_to_move)
       if (this->pin_count == 5)
         stepMotor(this->step_number % 10);
       else
-        stepMotor(this->step_number % 4);
-    } else {
-      yield();
+        stepMotor(this->step_number % 8);
     }
   }
 }
@@ -255,30 +258,60 @@ void Stepper::stepMotor(int thisStep)
   }
   if (this->pin_count == 4) {
     switch (thisStep) {
-      case 0:  // 1010
-        digitalWrite(motor_pin_1, HIGH);
-        digitalWrite(motor_pin_2, LOW);
-        digitalWrite(motor_pin_3, HIGH);
-        digitalWrite(motor_pin_4, LOW);
-      break;
-      case 1:  // 0110
-        digitalWrite(motor_pin_1, LOW);
-        digitalWrite(motor_pin_2, HIGH);
-        digitalWrite(motor_pin_3, HIGH);
-        digitalWrite(motor_pin_4, LOW);
-      break;
-      case 2:  //0101
-        digitalWrite(motor_pin_1, LOW);
-        digitalWrite(motor_pin_2, HIGH);
-        digitalWrite(motor_pin_3, LOW);
-        digitalWrite(motor_pin_4, HIGH);
-      break;
-      case 3:  //1001
-        digitalWrite(motor_pin_1, HIGH);
-        digitalWrite(motor_pin_2, LOW);
-        digitalWrite(motor_pin_3, LOW);
-        digitalWrite(motor_pin_4, HIGH);
-      break;
+    case 0:  // 0001
+      digitalWrite(motor_pin_1, LOW); 
+      digitalWrite(motor_pin_2, LOW);
+      digitalWrite(motor_pin_3, LOW);
+      digitalWrite(motor_pin_4, HIGH);
+      break; 
+    case 1:  // 0011
+      digitalWrite(motor_pin_1, LOW); 
+      digitalWrite(motor_pin_2, LOW);
+      digitalWrite(motor_pin_3, HIGH);
+      digitalWrite(motor_pin_4, HIGH);
+      break; 
+    case 2:  // 0010
+      digitalWrite(motor_pin_1, LOW); 
+      digitalWrite(motor_pin_2, LOW);
+      digitalWrite(motor_pin_3, HIGH);
+      digitalWrite(motor_pin_4, LOW);
+      break; 
+    case 3:  // 0110
+      digitalWrite(motor_pin_1, LOW); 
+      digitalWrite(motor_pin_2, HIGH);
+      digitalWrite(motor_pin_3, HIGH);
+      digitalWrite(motor_pin_4, LOW);
+      break; 
+    case 4:  // 0100
+      digitalWrite(motor_pin_1, LOW); 
+      digitalWrite(motor_pin_2, HIGH);
+      digitalWrite(motor_pin_3, LOW);
+      digitalWrite(motor_pin_4, LOW);
+      break; 
+    case 5:  // 1100
+      digitalWrite(motor_pin_1, HIGH); 
+      digitalWrite(motor_pin_2, HIGH);
+      digitalWrite(motor_pin_3, LOW);
+      digitalWrite(motor_pin_4, LOW);
+      break; 
+    case 6:  // 1000
+      digitalWrite(motor_pin_1, HIGH); 
+      digitalWrite(motor_pin_2, LOW);
+      digitalWrite(motor_pin_3, LOW);
+      digitalWrite(motor_pin_4, LOW);
+      break; 
+    case 7:  // 1001
+      digitalWrite(motor_pin_1, HIGH); 
+      digitalWrite(motor_pin_2, LOW);
+      digitalWrite(motor_pin_3, LOW);
+      digitalWrite(motor_pin_4, HIGH);
+      break; 
+    default:  // 0000
+      digitalWrite(motor_pin_1, LOW); 
+      digitalWrite(motor_pin_2, LOW);
+      digitalWrite(motor_pin_3, LOW);
+      digitalWrite(motor_pin_4, LOW);
+      break; 
     }
   }
 
@@ -363,5 +396,6 @@ void Stepper::stepMotor(int thisStep)
 */
 int Stepper::version(void)
 {
-  return 5;
+  //hypo
+  return 6;
 }
