@@ -12,6 +12,10 @@ This library allows you to control unipolar or bipolar stepper motors. To use it
 For more information about this library please visit us at
 http://www.arduino.cc/en/Reference/{repository-name}
 
+== Modification ==
+
+<h3>Half Stepping High Resolution</h3>
+
 == License ==
 
 Copyright (c) Arduino LLC. All right reserved.
